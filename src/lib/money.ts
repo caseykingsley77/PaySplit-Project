@@ -1,0 +1,3 @@
+export function formatNaira(kobo:number|string){const amount=Number(kobo)/100;return new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:2}).format(amount);}
+export function toKobo(value:string|number):number{const text=String(value).trim();if(!/^\d+(\.\d{1,2})?$/.test(text))throw new Error('Use a valid amount with at most 2 decimal places');const [whole,minor='']=text.split('.');const n=Number(whole)*100+Number(minor.padEnd(2,'0'));if(!Number.isSafeInteger(n)||n<=0)throw new Error('Amount is out of range');return n;}
+export function maskAccount(number:string){return number.length>4?'•'.repeat(Math.max(0,number.length-4))+number.slice(-4):number;}
