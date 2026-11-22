@@ -1,0 +1,1 @@
+import {describe,it,expect} from 'vitest';import {toKobo} from './money';describe('integer minor units',()=>{it('parses valid decimals',()=>{expect(toKobo('1200.05')).toBe(120005);});it('rejects float precision',()=>{expect(()=>toKobo('10.001')).toThrow();});});
