@@ -2,7 +2,8 @@ import {NextRequest,NextResponse} from 'next/server';
 import {createHmac,timingSafeEqual} from 'node:crypto';
 import {supabaseAdmin} from '@/lib/supabase';import {paystack} from '@/lib/paystack';import {runSplit} from '@/lib/splits';
 export const runtime='nodejs';
-type Event={event:string;data:Record<string,any>};
+type Event={event:string;data:{reference?:string}};
+type VerifiedPayin={status:string;currency:string;amount:number;metadata?:{purpose?:string;paysplit_user_id?:string};authorization?:{receiver_bank_account_number?:string;account_number?:string};dedicated_account?:{account_number?:string};customer?:{customer_code?:string}};
 export async function POST(req:NextRequest) {
  try {
   const raw=await req.text();const signature=req.headers.get('x-paystack-signature')||'';
@@ -14,7 +15,7 @@ export async function POST(req:NextRequest) {
   const event=JSON.parse(raw) as Event,db=supabaseAdmin();
   if(event.event==='charge.success'){
    const ref=String(event.data.reference||'');if(!ref)return new NextResponse('Missing reference',{status:400});
-   const transaction=await paystack<any>('/transaction/verify/'+encodeURIComponent(ref));
+   const transaction=await paystack<VerifiedPayin>('/transaction/verify/'+encodeURIComponent(ref));
    if(transaction.status!=='success'||transaction.currency!=='NGN')return NextResponse.json({ignored:true});
    const amount=Number(transaction.amount);
    if(!Number.isSafeInteger(amount)||amount<=0)return new NextResponse('Invalid amount',{status:400});
