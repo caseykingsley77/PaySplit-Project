@@ -21,7 +21,7 @@ export async function POST(req:NextRequest) {
    if(!Number.isSafeInteger(amount)||amount<=0)return new NextResponse('Invalid amount',{status:400});
    const metadata=transaction.metadata||{};
    let userId:string|null=null;
-   if(metadata.purpose==='sandbox_salary_demo'&&/^[0-9a-f-]{36}$/i.test(metadata.paysplit_user_id||''))userId=metadata.paysplit_user_id;
+   if(metadata.purpose==='sandbox_salary_demo'&&/^[0-9a-f-]{36}$/i.test(metadata.paysplit_user_id||''))userId=metadata.paysplit_user_id||null;
    if(!userId){
     const account=transaction.authorization?.receiver_bank_account_number||transaction.authorization?.account_number||transaction.dedicated_account?.account_number;
     const customer=transaction.customer?.customer_code;
