@@ -1,19 +1,18 @@
 import {NextRequest,NextResponse} from 'next/server';import {z} from 'zod';
 import {authenticate,ApiError,errorResponse} from '@/lib/auth';
-/* Server-side verification: never promote KYC based on the browser widget callback.
-   Configure DOJAH_VERIFICATION_STATUS_URL as the provider's approved backend
-   verification-status endpoint (with {reference} substitution) from your Dojah account.
-   Only an explicit verified decision AND completed liveness can approve an account. */
+/* Never trust a browser callback: obtain product-specific verification details
+   from the Dojah backend. Check both ID and liveness results and bind the
+   reference to the authenticated user's own KYC session. */
 export async function POST(req:NextRequest){try{const {user,db}=await authenticate(req);
- const {reference}=z.object({reference:z.string().trim().min(4).max(200)}).parse(await req.json());
+ const {reference}=z.object({reference:z.string().uuid()}).parse(await req.json());
+ if(reference!==user.id)throw new ApiError(403,'Verification reference does not belong to you');
  const template=process.env.DOJAH_VERIFICATION_STATUS_URL;
- if(!template||!process.env.DOJAH_SECRET_KEY||!process.env.DOJAH_APP_ID)throw new ApiError(503,'Dojah server verification is not yet configured');
+ if(!template||!process.env.DOJAH_SECRET_KEY||!process.env.DOJAH_APP_ID)throw new ApiError(503,'Dojah server verification is not configured');
  const url=new URL(template.replace('{reference}',encodeURIComponent(reference)));
- if(url.protocol!=='https:'||url.hostname!=='api.dojah.io')throw new ApiError(503,'Invalid Dojah verification endpoint');
+ if(url.protocol!=='https:'||url.hostname!=='api.dojah.io')throw new ApiError(503,'Untrusted KYC provider endpoint');
  const response=await fetch(url,{headers:{AppId:process.env.DOJAH_APP_ID,Authorization:process.env.DOJAH_SECRET_KEY},cache:'no-store'});
- if(!response.ok)throw new ApiError(502,'Could not verify KYC with Dojah');
+ if(!response.ok)throw new ApiError(502,'Unable to verify identity with Dojah');
  const payload=await response.json();
- // Provider schemas can vary by product; do not assume a successful HTTP response means KYC passed.
  const result=payload?.entity||payload?.data||{};
  const identityPassed=result.identity_verified===true;
  const livenessPassed=result.liveness_verified===true;
