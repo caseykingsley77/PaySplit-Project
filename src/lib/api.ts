@@ -1,0 +1,3 @@
+import { supabaseBrowser } from './supabase';
+export async function api<T=unknown>(path:string,init:RequestInit={}):Promise<T>{const {data:{session}}=await supabaseBrowser().auth.getSession();if(!session) throw new Error('You are not signed in');const res=await fetch('/api'+path,{...init,headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,...init.headers}});const body=await res.json().catch(()=>({}));if(!res.ok)throw new Error(body.error||'Request failed');return body as T;}
+export const send=(path:string,data:unknown)=>api(path,{method:'POST',body:JSON.stringify(data)});
