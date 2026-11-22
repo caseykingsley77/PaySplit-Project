@@ -1,8 +1,8 @@
-# PaySplit — salary automation (assessment build)
+# PaySplit — Salary Automation
 
 A Next.js full-stack fintech sandbox application. Users define how confirmed incoming salary should be allocated between savings wallets and external beneficiaries using prioritized fixed or percentage-based rules. The app keeps an auditable double-entry ledger and holds outgoing transfers pending until provider confirmation.
 
-> **Status: in development.** Code has been committed, but end-to-end provider testing and deployment are not yet complete. Do not use real money or personal NIN/BVN data. The user-facing interface is a custom responsive design; matching the supplied Figma exactly remains blocked by design-file access.
+> **Development status:** The application passes automated unit tests and a production build. End-to-end provider testing and public deployment are pending. This project uses payment and identity-verification sandboxes; do not use real funds or sensitive identity documents.
 
 ## Features currently implemented
 
@@ -32,7 +32,7 @@ npm run build
 
 Open http://localhost:3000. Sign up and verify the email as configured in Supabase Authentication settings.
 
-## Deployment (candidate free-tier path)
+## Deployment
 
 1. Import this GitHub repository into Vercel Hobby.
 2. Set environment variables listed in `.env.example` in Vercel Project Settings; **never** expose the Supabase service-role or Paystack secret keys through `NEXT_PUBLIC_` variables.
@@ -41,7 +41,7 @@ Open http://localhost:3000. Sign up and verify the email as configured in Supaba
 5. Configure/test your Dojah widget, approved verification endpoint and domain. Complete a full sandbox onboarding and payment round-trip before recording a demo.
 6. Check GitHub Actions CI and the deployed app logs. Sandbox provisioning may depend on Paystack account eligibility.
 
-**Not yet deployed from this workspace:** A Vercel project and provider keys must be connected by the repository owner. There is currently no verified live URL.
+**Deployment status:** No public deployment has been configured. Deployment requires a Vercel project, the database schema, and provider sandbox credentials.
 
 ## System boundaries
 
@@ -62,9 +62,8 @@ Open http://localhost:3000. Sign up and verify the email as configured in Supaba
 ## Known limitations and required follow-up
 
 1. **Dojah:** Set the hosted Dojah widget URL as `DOJAH_WIDGET_URL` and the product-specific verification-status endpoint as `DOJAH_VERIFICATION_STATUS_URL`, using `{reference}` placeholder (allowed host: `api.dojah.io`). The response parser currently requires `status: approved`, `identity_verified: true`, and `liveness_verified: true`. This mapping MUST be validated against the specific subscribed Dojah widget/product before the KYC path can approve users. The hosted widget launch URL is wired to the KYC screen; the Dojah response mapping and completion flow still require provider-specific validation.
-2. **Paystack:** Dedicated virtual account creation is eligibility-dependent, sandbox transfer balances vary, and asynchronous transfer statuses must be reconciled when webhook delivery is missed. For assessment reliability, add a provider reconciliation job/outbox worker.
-3. **Frontend:** UI is not pixel-matched to the Figma due to access restrictions.
-4. **Operational:** Email notifications, admin test-pay-in controls, pagination beyond displayed records, advanced audit logs, rate limiting, broader provider integration tests and full WCAG review are not yet implemented.
-5. A real public live deployment and demo recording are separate remaining deliverables.
+2. **Paystack:** Dedicated virtual account creation is eligibility-dependent, sandbox transfer balances vary, and asynchronous transfer statuses must be reconciled when webhook delivery is missed. Add a provider reconciliation job or outbox worker to recover from delayed or missed webhook deliveries.
+3. **Operational:** Email notifications, admin test-pay-in controls, pagination beyond displayed records, advanced audit logs, rate limiting, broader provider integration tests and full WCAG review are not yet implemented.
+4. **Release:** A public deployment and product walkthrough recording are pending.
 
 See [tool decisions](docs/TOOL_CHOICES.md) and the [demo guide](docs/DEMO_SCRIPT.md).
