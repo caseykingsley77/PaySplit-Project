@@ -4,7 +4,8 @@ export async function GET(req:NextRequest){try{const {user,db}=await authenticat
  const {data,error}=await db.from('ledger_journals').select('reference,description,created_at,ledger_postings(amount_kobo,ledger_accounts(code))').eq('user_id',user.id).order('created_at',{ascending:false}).limit(500);
  if(error)throw error;
  const lines=['Date,Reference,Description,Account,Amount (kobo)'];
- for(const journal of data||[])for(const posting of (journal.ledger_postings as any[])||[]){
+ type Posting={amount_kobo:number;ledger_accounts:{code:string}|null};
+ for(const journal of data||[])for(const posting of ((journal.ledger_postings||[]) as unknown as Posting[])){
   lines.push([journal.created_at,journal.reference,journal.description,posting.ledger_accounts?.code||'',posting.amount_kobo].map(csvCell).join(','));
  }
  return new NextResponse(lines.join('\n'),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="paysplit-statement.csv"','Cache-Control':'private, no-store'}});
