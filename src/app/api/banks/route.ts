@@ -1,0 +1,2 @@
+import {NextRequest,NextResponse} from 'next/server';import {authenticate,errorResponse} from '@/lib/auth';import {paystack} from '@/lib/paystack';
+export async function GET(req:NextRequest){try{await authenticate(req);const data=await paystack<Array<{name:string;code:string}>>('/bank?country=nigeria&currency=NGN&perPage=100');return NextResponse.json({banks:data.map(({name,code})=>({name,code}))});}catch(e){return errorResponse(e);}}
