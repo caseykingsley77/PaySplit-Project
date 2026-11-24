@@ -1,13 +1,7 @@
 import Link from 'next/link';
+import {BrandLogo,BrandMark} from '@/components/brand';
 import {ArrowRight, Bell, ChevronRight, Download, LockKeyhole, Plus, Search, Wallet} from 'lucide-react';
 
-function PaySplitMark({small=false}:{small?:boolean}){
- return <svg className={small?'lp-mark lp-mark-small':'lp-mark'} viewBox="0 0 32 32" fill="none" role="img" aria-label="PaySplit logo">
-  <rect x="4" y="4" width="24" height="24" rx="7" fill="#2DA8F0"/>
-  <path d="M3 29L29 3" stroke="#071013" strokeWidth="3" strokeLinecap="round"/>
-  <path d="M1 23L23 1" stroke="#071013" strokeWidth="2" strokeLinecap="round"/>
- </svg>;
-}
 function AppleBadge(){
  return <div className="lp-store-badge" title="iOS app coming soon" aria-label="App Store: coming soon">
   <svg viewBox="0 0 24 28" width="27" height="30" aria-hidden="true" fill="white">
@@ -33,7 +27,7 @@ function ProductPreview(){
    <div className="lp-device-camera"/>
    <div className="lp-product-ui">
     <div className="lp-ui-nav">
-     <div className="lp-ui-brand"><PaySplitMark small/> <b>Paysplit</b></div>
+     <div className="lp-ui-brand"><BrandMark size={14}/> <b>PaySplit</b></div>
      <div className="lp-ui-navitems"><span className="selected">Dashboard</span><span>Transactions</span><span>My wallet</span><span>Split Rules</span></div>
      <div className="lp-ui-user"><Search size={12}/><Bell size={12}/><span className="lp-ui-avatar">P</span><small>Paul</small></div>
     </div>
@@ -62,7 +56,7 @@ function ProductPreview(){
 export default function MarketingLanding(){
  return <div className="lp-page">
   <header className="lp-header">
-   <Link className="lp-brand" href="/" aria-label="PaySplit home"><PaySplitMark/><span>Paysplit</span></Link>
+   <Link className="lp-brand" href="/" aria-label="PaySplit home"><BrandLogo variant="light" markSize={27}/></Link>
    <nav className="lp-nav" aria-label="Main navigation"><a href="#about">About PaySplit</a><a href="#insights">Blog</a><a href="#contact">Contact</a></nav>
    <div className="lp-header-actions"><Link className="lp-login" href="/auth?mode=signin">Login <ArrowRight size={17}/></Link><Link className="lp-get-started" href="/auth?mode=signup">Get Started <ArrowRight size={18}/></Link></div>
   </header>
@@ -89,6 +83,6 @@ export default function MarketingLanding(){
     </div>
    </section>
   </main>
-  <footer className="lp-footer" id="contact"><div className="lp-brand"><PaySplitMark/><span>Paysplit</span></div><span>Salary automation, made simple.</span><a href="https://github.com/caseykingsley77/PaySplit-Project/issues" target="_blank" rel="noreferrer">Contact & support <ArrowRight size={15}/></a><span className="lp-footer-security"><LockKeyhole size={14}/> Sandbox environment</span></footer>
+  <footer className="lp-footer" id="contact"><div className="lp-brand"><BrandLogo variant="light" markSize={27}/></div><span>Salary automation, made simple.</span><a href="https://github.com/caseykingsley77/PaySplit-Project/issues" target="_blank" rel="noreferrer">Contact & support <ArrowRight size={15}/></a><span className="lp-footer-security"><LockKeyhole size={14}/> Sandbox environment</span></footer>
  </div>;
 }
