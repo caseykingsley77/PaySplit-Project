@@ -16,8 +16,8 @@ A Next.js full-stack fintech sandbox application. Users define how confirmed inc
 ## Local setup
 
 1. Install Node.js 22 or later, and create a free Supabase project.
-2. Run the SQL in [supabase/schema.sql](supabase/schema.sql) using Supabase SQL Editor. **Do this on a new project** — the schema creates tables/functions and a trigger.
-3. Run the additional schema migration in [supabase/migrations/20261125_profile_setup.sql](supabase/migrations/20261125_profile_setup.sql) for employer, salary-estimate, phone and notification preferences. This migration is safe to rerun.
+2. On a fresh Supabase project, run the complete one-time [supabase/setup.sql](supabase/setup.sql) in Supabase SQL Editor. This creates tables, functions and triggers, applies profile migrations, and backfills previously registered accounts. **Do not rerun it on an initialized database.**
+3. For an existing PaySplit database, apply only the reviewed incremental SQL in [supabase/migrations](supabase/migrations), not setup.sql.
 4. Copy `.env.example` to `.env.local`; fill in the Supabase URL, public key and server-only service role key.
 5. Create Paystack **test** credentials, and put `sk_test_...` in `PAYSTACK_SECRET_KEY`. Register your public `https://YOUR_DOMAIN/api/webhooks/paystack` webhook in Paystack test mode. The webhook endpoint uses HMAC-SHA512 to reject unsigned payloads.
 6. Create a Dojah sandbox flow with Nigerian identity and liveness checks. Configure the app, widget and server-side provider verification endpoint for your sandbox product. **See KYC limitation below.**
@@ -32,6 +32,10 @@ npm run build
 ```
 
 Open http://localhost:3000. Sign up and verify the email as configured in Supabase Authentication settings. For a public signup workflow, configure a custom SMTP sender and see [email verification setup and troubleshooting](docs/AUTH_EMAIL_SETUP.md).
+
+## Dashboard error: database not initialized
+
+If your account page displays an internal server error or database setup warning, check [production readiness](https://paysplit-project.vercel.app/api/health) and follow the [database initialization recovery guide](docs/DATABASE_SETUP.md). The deployment requires both Supabase Auth **and** the PaySplit application SQL schema; configuring Supabase keys alone is insufficient.
 
 ## Deployment
 
