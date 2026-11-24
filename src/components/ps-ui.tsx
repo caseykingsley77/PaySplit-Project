@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import {Activity as ActivityIcon, ArrowDownRight, ArrowUpRight, Check, ChevronRight, CircleDollarSign, Clock3, ShieldCheck, Wallet} from 'lucide-react';
+import {ArrowDownRight, ArrowUpRight, ChevronRight, CircleDollarSign, Wallet} from 'lucide-react';
 import type {Activity, Dashboard} from '@/lib/dashboard-types';
 import {naira,formatDay} from '@/lib/dashboard-types';
 export function PsLogo(){return <Link href="/" className="ps-logo"><span className="ps-logo-glyph" aria-hidden="true"><i/></span><span>Paysplit</span></Link>}
