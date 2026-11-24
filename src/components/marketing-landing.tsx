@@ -36,7 +36,7 @@ export default function MarketingLanding(){
      <h1 id="lp-heading">We automate<br/>salary partitions<br/>that ignite<br/>financial clarity.</h1>
      <div className="lp-store-row"><AppleBadge/><GoogleBadge/></div>
     </div>
-    <div className="lp-hero-photograph" aria-hidden="true"><Image src="/paysplit-landing-hero.webp" alt="" fill priority unoptimized sizes="100vw" className="lp-hero-photo-img"/></div>
+    <div className="lp-hero-photograph" aria-hidden="true"><Image src="/paysplit-landing-hero.avif" alt="" fill priority sizes="(max-width: 800px) 100vw, 80vw" className="lp-hero-photo-img"/></div>
    </section>
    <section className="lp-about" id="about">
     <div><small>ABOUT PAYSPLIT</small><h2>Make every payday work for you.</h2></div>
