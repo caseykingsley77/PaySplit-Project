@@ -6,6 +6,7 @@ import {ArrowDownLeft,ArrowRight,Bell,CheckCircle2,ChevronDown,ChevronRight,Copy
 import {api,send} from '@/lib/api';
 import {supabaseBrowser} from '@/lib/supabase';
 import {toKobo} from '@/lib/money';
+import {designPreview} from '@/lib/design-preview';
 import type {Activity,Beneficiary,Dashboard,SplitRule,Wallet as WalletType} from '@/lib/dashboard-types';
 import {activities,accountMask,formatDay,naira,nextPayday} from '@/lib/dashboard-types';
 import {ActivityTable,CashflowChart,Empty,PartitionBar,PsLogo,RingChart,SectionIntro,Status} from '@/components/ps-ui';
@@ -17,7 +18,7 @@ const categories=['Savings','Emergency','Rent','Bills','Education','Travel','Inv
 const colors=['#edfaff','#fff0ed','#f4eaff','#eff9e8','#fcefd9','#eaf1fa'];
 const accents=['#168fda','#fb653e','#8b37ee','#37a753','#ce8e3c','#506bc9'];
 function Greeting({name}:{name:string}){const hour=new Date().getHours();return <>{hour<12?'Good Morning':hour<17?'Good Afternoon':'Good Evening'}, {name.split(' ')[0]||'there'}!</>;}
-export default function PaySplitWorkspace(){
+export default function PaySplitWorkspace({preview=false}:{preview?:boolean}){
  const router=useRouter();
  const [data,setData]=useState<Dashboard|null>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
  const [tab,setTab]=useState<Tab>('dashboard'),[destinationTab,setDestinationTab]=useState<'wallets'|'beneficiaries'>('wallets'),[activityFilter,setActivityFilter]=useState<'all'|'wallet'|'beneficiary'>('all'),[search,setSearch]=useState('');
@@ -26,11 +27,11 @@ export default function PaySplitWorkspace(){
  const [showAllActivity,setShowAllActivity]=useState(false);
  const refresh=useCallback(async()=>{const v=await api<Dashboard>('/dashboard');setData(v);return v;},[]);
  useEffect(()=>{const params=new URLSearchParams(window.location.search),initial=params.get('tab') as Tab;if(['dashboard','transactions','destinations','rules','profile'].includes(initial))setTab(initial);
-  if(!configured){setLoading(false);return;}
+  if(preview){setData(designPreview);setLoading(false);return;}if(!configured){setLoading(false);return;}
   supabaseBrowser().auth.getSession().then(({data:{session}})=>{if(!session){router.replace('/auth?mode=signin');return;}void refresh().catch(e=>setError(e instanceof Error?e.message:'Unable to load account')).finally(()=>setLoading(false));}).catch(()=>{setLoading(false);setError('Unable to connect to your account');});
- },[router,refresh]);
- function navigate(next:Tab){setTab(next);setProfileMenu(false);setMobileMenu(false);setNotificationsOpen(false);setDetail(null);setSearch('');window.history.replaceState(null,'',next==='dashboard'?'/dashboard':'/dashboard?tab='+next);}
- async function act(run:()=>Promise<unknown>,message:string){setBusy(true);setError('');try{await run();setSuccess(message);setModal(null);setEditingId(null);setForm({});await refresh();}catch(e){setError(e instanceof Error?e.message:'Action failed');}finally{setBusy(false);}}
+ },[router,refresh,preview]);
+ function navigate(next:Tab){setTab(next);setProfileMenu(false);setMobileMenu(false);setNotificationsOpen(false);setDetail(null);setSearch('');window.history.replaceState(null,'',next==='dashboard'?(preview?'/preview':'/dashboard'):(preview?'/preview':'/dashboard')+'?tab='+next);}
+ async function act(run:()=>Promise<unknown>,message:string){if(preview){setError('This is a read-only design preview. No changes or financial transactions can be made here.');return;}setBusy(true);setError('');try{await run();setSuccess(message);setModal(null);setEditingId(null);setForm({});await refresh();}catch(e){setError(e instanceof Error?e.message:'Action failed');}finally{setBusy(false);}}
  function openModal(kind:NonNullable<Modal>,item?:WalletType|SplitRule){
   setError('');setModal(kind);setDetail(null);setEditingId(item?.id||null);
   if(kind==='wallet'&&item&&'target_kobo'in item){setForm({name:item.name,category:item.category,target:item.target_kobo?String(Number(item.target_kobo)/100):''});}
@@ -46,13 +47,13 @@ export default function PaySplitWorkspace(){
   if(modal==='salary'){await act(async()=>{const r=await send('/payin',{amount_kobo:toKobo(form.amount)}) as {authorization_url:string};if(!r.authorization_url)throw new Error('Paystack returned no checkout URL');window.location.assign(r.authorization_url);},'Opening test payment checkout');}
   if(modal==='collection'){await act(()=>send('/collection',{}),'Collection account provisioned');}
  }
- async function signOut(){await supabaseBrowser().auth.signOut();router.replace('/');}
- async function exportStatement(){setBusy(true);try{const {data:{session}}=await supabaseBrowser().auth.getSession();if(!session)throw new Error('Session expired');const resp=await fetch('/api/statements',{headers:{Authorization:'Bearer '+session.access_token}});if(!resp.ok)throw new Error('Unable to export statement');const file=URL.createObjectURL(await resp.blob());const a=document.createElement('a');a.href=file;a.download='paysplit-statement.csv';a.click();URL.revokeObjectURL(file);}catch(e){setError(e instanceof Error?e.message:'Export failed');}finally{setBusy(false);}}
+ async function signOut(){if(preview){router.push('/');return;}await supabaseBrowser().auth.signOut();router.replace('/');}
+ async function exportStatement(){if(preview){setError('Statement export is unavailable in design preview mode.');return;}setBusy(true);try{const {data:{session}}=await supabaseBrowser().auth.getSession();if(!session)throw new Error('Session expired');const resp=await fetch('/api/statements',{headers:{Authorization:'Bearer '+session.access_token}});if(!resp.ok)throw new Error('Unable to export statement');const file=URL.createObjectURL(await resp.blob());const a=document.createElement('a');a.href=file;a.download='paysplit-statement.csv';a.click();URL.revokeObjectURL(file);}catch(e){setError(e instanceof Error?e.message:'Export failed');}finally{setBusy(false);}}
  async function saveProfile(event:React.FormEvent){event.preventDefault();if(!data)return;const p=data.profile;const payload={full_name:settings.full_name??p.full_name,employer_name:settings.employer_name??p.employer_name??'',phone_number:settings.phone_number??p.phone_number??'',expected_salary_day:Number(settings.expected_salary_day??p.expected_salary_day),expected_salary_kobo:(settings.expected_salary??(p.expected_salary_kobo?String(p.expected_salary_kobo/100):''))?toKobo(settings.expected_salary??String(Number(p.expected_salary_kobo)/100)):null,notifications_preferences:{push:settings.pref_push!==undefined?settings.pref_push==='true':p.notifications_preferences?.push??true,email:settings.pref_email!==undefined?settings.pref_email==='true':p.notifications_preferences?.email??true,sms:settings.pref_sms!==undefined?settings.pref_sms==='true':p.notifications_preferences?.sms??false}};
  await act(()=>api('/profile',{method:'PATCH',body:JSON.stringify(payload)}),'Profile updated');}
  function titleForRule(rule:SplitRule){return rule.destination_type==='wallet'?data?.wallets.find(w=>w.id===rule.destination_id)?.name:data?.beneficiaries.find(b=>b.id===rule.destination_id)?.name;}
  const listed=useMemo(()=>data?activities(data).filter(a=>(activityFilter==='all'||a.type===activityFilter)&&[a.reference,a.name,a.category,a.status].join(' ').toLowerCase().includes(search.toLowerCase())):[],[data,search,activityFilter]);
- if(!configured)return <main className="ps-setup-fallback"><ShieldCheck size={38}/><h1>Account services are temporarily unavailable</h1><p>PaySplit needs its authentication and database configuration to access your workspace.</p><Link className="ps-blue-btn" href="/">Back to homepage</Link></main>;
+ if(!configured&&!preview)return <main className="ps-setup-fallback"><ShieldCheck size={38}/><h1>Account services are temporarily unavailable</h1><p>PaySplit needs its authentication and database configuration to access your workspace.</p><Link className="ps-blue-btn" href="/">Back to homepage</Link></main>;
  if(loading)return <div className="ps-loading">Loading your PaySplit workspace…</div>;
  if(!data)return <main className="ps-setup-fallback"><ShieldCheck size={38}/><h1>We couldn&apos;t load your account</h1><p>{error||'Check your connection and try again.'}</p><button className="ps-blue-btn" onClick={()=>void refresh().then(()=>setError('')).catch(e=>setError(String(e)))}>Retry</button><Link href="/">Back to homepage</Link></main>;
  const p=data.profile;const activeRules=data.rules.filter(r=>r.status==='active');
@@ -67,7 +68,7 @@ export default function PaySplitWorkspace(){
   </nav><div className="ps-top-actions"><button title="Search transactions" aria-label="Search transactions" onClick={()=>navigate('transactions')}><Search size={18}/></button><div className="ps-anchor"><button title="Notifications" aria-label="Notifications" onClick={()=>{setNotificationsOpen(!notificationsOpen);setProfileMenu(false);}}><Bell size={17}/>{data.notifications.some(n=>!n.read_at)&&<span className="ps-bell-dot"/>}</button>{notificationsOpen&&<div className="ps-dropdown ps-notification-dropdown"><b>Notifications</b>{!data.notifications.length?<p>No new notifications yet.</p>:data.notifications.slice(0,6).map(n=><div key={n.id}><strong>{n.title}</strong><small>{n.message}</small></div>)}</div>}</div>
   <div className="ps-anchor"><button className="ps-profile-trigger" onClick={()=>{setProfileMenu(!profileMenu);setNotificationsOpen(false);}}><span className="ps-avatar">{p.full_name?.charAt(0)||'P'}</span>{p.full_name.split(' ')[0]}<ChevronDown size={14}/></button>
   {profileMenu&&<div className="ps-dropdown ps-profile-dropdown"><b>{p.full_name}</b><small>{data.email}</small><hr/><button onClick={()=>navigate('profile')}><UserRound size={16}/> View Profile</button><button onClick={()=>setModal('signout')}><LogOut size={16}/> Log Out</button></div>}</div><button className="ps-mobile-menu" aria-label="Toggle menu" onClick={()=>setMobileMenu(!mobileMenu)}><Menu size={19}/></button></div></header>
-  <main className="ps-main-content">
+  <main className="ps-main-content">{preview&&<div className="ps-preview-banner"><ShieldCheck size={16}/> <strong>Design preview</strong> — sample data only. Payments, account changes and verification are disabled. <Link href="/">Return to PaySplit</Link></div>}
    {tab==='dashboard'&&<>
     <div className="ps-dashboard-hero"><div className="ps-dashboard-greeting"><h1><Greeting name={p.full_name}/></h1><p>{new Date().toLocaleString('en-NG',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</p></div><div className="ps-hero-notification"><div><Bell size={14}/> <b>Notification</b><button onClick={()=>setNotificationsOpen(true)}>View <ChevronRight size={12}/></button></div><p>{data.notifications[0]?.message||'Welcome to PaySplit. Configure your account to start automating your salary.'}</p><i/></div><div className="ps-hero-buttons"><button className="ps-ghost-btn" onClick={()=>void exportStatement()}><Download size={16}/> Export</button><button className="ps-blue-btn" onClick={()=>openModal('wallet')}><Plus size={17}/> Create Wallet</button></div></div>
     <section className="ps-dashboard-body">
