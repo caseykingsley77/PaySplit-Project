@@ -374,3 +374,10 @@
 @media(max-width:520px){.ps-admin-content{padding:20px 13px}.ps-admin .ps-metrics-grid,.ps-admin .ps-admin-three{grid-template-columns:repeat(2,minmax(0,1fr))}.ps-admin-wallets{grid-template-columns:1fr}.ps-admin-user-tabs{flex-wrap:wrap;gap:3px}.ps-admin-user-banner h2{font-size:18px}.ps-admin-user-banner p{line-height:1.7}}
 
 .ps-preview-banner{padding:10px 4vw;background:#fff9df;color:#69582a;border-bottom:1px solid #f3df9f;font-size:11px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}.ps-preview-banner strong{font-size:11px}.ps-preview-banner a{margin-left:auto;color:#187dbf;text-decoration:underline}
+
+/* Unified brand mark in authentication overlays and headers */
+.ps-auth-logo-holder{display:flex;align-items:center;justify-content:center;margin:1px auto 18px;width:48px;height:48px;}
+.ps-logo .paysplit-brand{font-size:14px;line-height:1;}
+.lp-brand .paysplit-brand{font-size:16px;font-weight:500;line-height:1;}
+.lp-ui-brand svg{display:block;}
+@media(max-width:540px){.lp-brand .paysplit-brand{font-size:14px;}}
