@@ -35,7 +35,7 @@ export default function AuthPage(){
   }
   if(mode==='verify'){
    if(otp.join('').length!==6)throw new Error('Enter the six-digit email verification code');
-   const {error:e}=await client.auth.verifyOtp({email,token:otp.join(''),type:'signup'});if(e)throw e;
+   const {error:e}=await client.auth.verifyOtp({email,token:otp.join(''),type:'email'});if(e)throw e;
    setMode('welcome');
   }
   if(mode==='reset'){
