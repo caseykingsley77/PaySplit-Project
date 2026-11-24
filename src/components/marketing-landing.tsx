@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {BrandLogo,BrandMark} from '@/components/brand';
-import {ArrowRight, Bell, ChevronRight, Download, LockKeyhole, Plus, Search, Wallet} from 'lucide-react';
+import {ArrowRight, Download, LockKeyhole, Plus, Wallet} from 'lucide-react';
 
 function AppleBadge(){
  return <div className="lp-store-badge" title="iOS app coming soon" aria-label="App Store: coming soon">
@@ -21,38 +22,6 @@ function GoogleBadge(){
   <span><small>Download on the</small><strong>Google play</strong></span>
  </div>;
 }
-function ProductPreview(){
- return <div className="lp-product-device" aria-label="Preview of the PaySplit dashboard" role="img">
-  <div className="lp-device-screen">
-   <div className="lp-device-camera"/>
-   <div className="lp-product-ui">
-    <div className="lp-ui-nav">
-     <div className="lp-ui-brand"><BrandMark size={14}/> <b>PaySplit</b></div>
-     <div className="lp-ui-navitems"><span className="selected">Dashboard</span><span>Transactions</span><span>My wallet</span><span>Split Rules</span></div>
-     <div className="lp-ui-user"><Search size={12}/><Bell size={12}/><span className="lp-ui-avatar">P</span><small>Paul</small></div>
-    </div>
-    <div className="lp-ui-welcome">
-     <div className="lp-welcome-copy"><strong>Good Afternoon, Paul!</strong><small>Saturday, December 25th, 2026</small></div>
-     <div className="lp-mini-notification"><div><Bell size={10}/> <b>Notification</b> <span>View <ChevronRight size={10}/></span></div><p>Your salary split has been processed. Your money is working for you.</p><i/></div>
-    </div>
-    <div className="lp-ui-body">
-     <div className="lp-ui-summary">
-      <div><small>Unallocated Balance</small><strong>₦850,000</strong><em>Direct deposit via Access Bank Plc</em></div>
-      <div><small>Split Allocation</small><strong>₦612,500</strong><em className="positive">72% of Salary</em></div>
-      <div><small>Total in Vaults</small><strong>₦1,610,000</strong><em>Active vaults</em></div>
-      <div><small>Next Split Run</small><strong className="lp-ui-date">Nov 25, 2026</strong><em>Fund Status <span className="negative">Unavailable</span></em></div>
-     </div>
-     <div className="lp-ui-panels">
-      <div className="lp-chart-panel"><div className="lp-chart-head"><b>Salary Allocation & Split Cash Flow</b><span>● Savings Vaults　● Transfers & Bills</span></div><div className="lp-chart-sub"><strong>₦850,000</strong> <small>↑ 18% from last month</small></div><div className="lp-bars"><i style={{height:'23%'}}/><i style={{height:'58%'}}/><i style={{height:'37%'}}/><i style={{height:'83%'}}/><i style={{height:'70%'}}/><i style={{height:'46%'}}/><i style={{height:'95%'}}/></div></div>
-      <div className="lp-chart-panel lp-donut-panel"><div className="lp-chart-head"><b>Salary Partition</b><small>Edit rule ›</small></div><div className="lp-donut"><span/></div><div className="lp-donut-caption">Saved Account <b>₦237,500</b></div></div>
-     </div>
-    </div>
-   </div>
-  </div>
-  <div className="lp-device-hinge"/>
-  <div className="lp-device-base"><span className="lp-base-trackpad"/></div>
- </div>;
-}
 export default function MarketingLanding(){
  return <div className="lp-page">
   <header className="lp-header">
@@ -67,7 +36,7 @@ export default function MarketingLanding(){
      <h1 id="lp-heading">We automate<br/>salary partitions<br/>that ignite<br/>financial clarity.</h1>
      <div className="lp-store-row"><AppleBadge/><GoogleBadge/></div>
     </div>
-    <ProductPreview/>
+    <div className="lp-hero-photograph" aria-hidden="true"><Image src="/paysplit-landing-hero.webp" alt="" fill priority unoptimized sizes="100vw" className="lp-hero-photo-img"/></div>
    </section>
    <section className="lp-about" id="about">
     <div><small>ABOUT PAYSPLIT</small><h2>Make every payday work for you.</h2></div>
