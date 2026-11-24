@@ -3,11 +3,12 @@ import {useEffect,useState} from 'react';
 import {ArrowRight,CheckCircle2,ShieldCheck,GitBranch,Wallet} from 'lucide-react';
 import {supabaseBrowser} from '@/lib/supabase';
 import {useRouter} from 'next/navigation';
+const authConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 export default function Home(){
  const router=useRouter();const [mode,setMode]=useState<'signin'|'signup'>('signup');
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[fullName,setFullName]=useState('');
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState('');
- useEffect(()=>{supabaseBrowser().auth.getSession().then(({data})=>{if(data.session)router.replace('/dashboard');});},[router]);
+ useEffect(()=>{if(!authConfigured)return;supabaseBrowser().auth.getSession().then(({data})=>{if(data.session)router.replace('/dashboard');}).catch(()=>setNotice('Unable to connect to the account service. Please try again.'));},[router]);
  async function submit(e:React.FormEvent){
  e.preventDefault();setBusy(true);setNotice('');
  try{
@@ -34,12 +35,12 @@ export default function Home(){
  </section><section className="auth-main"><div className="auth-card">
  <span className="pill">WELCOME TO BETTER MONEY</span><h2>{mode==='signup'?'Create your account':'Welcome back'}</h2>
  <p className="muted">{mode==='signup'?'Start organizing your money in just a few steps.':'Sign in to your PaySplit account.'}</p>
- <form onSubmit={submit} className="form-stack">{mode==='signup'&&<label>Full name<input required minLength={2} placeholder="Your full name" value={fullName} onChange={e=>setFullName(e.target.value)}/></label>}
+ {!authConfigured?<div role="status" className="notice">Account services are temporarily unavailable. Please check back shortly.</div>:<form onSubmit={submit} className="form-stack">{mode==='signup'&&<label>Full name<input required minLength={2} placeholder="Your full name" value={fullName} onChange={e=>setFullName(e.target.value)}/></label>}
  <label>Email address<input required type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/></label>
  <label>Password<input required type="password" autoComplete={mode==='signup'?'new-password':'current-password'} minLength={8} placeholder="At least 8 characters" value={password} onChange={e=>setPassword(e.target.value)}/></label>
  {notice&&<div role="status" className="notice">{notice}</div>}
- <button className="primary-btn full" disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create account':'Sign in'} <ArrowRight size={18}/></button></form>
- <p className="auth-switch">{mode==='signup'?'Already have an account?':'New to PaySplit?'} <button className="text-link" onClick={()=>{setMode(mode==='signup'?'signin':'signup');setNotice('');}}>{mode==='signup'?'Sign in':'Create an account'}</button></p>
+ <button className="primary-btn full" disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create account':'Sign in'} <ArrowRight size={18}/></button></form>}
+ {authConfigured&&<p className="auth-switch">{mode==='signup'?'Already have an account?':'New to PaySplit?'} <button className="text-link" onClick={()=>{setMode(mode==='signup'?'signin':'signup');setNotice('');}}>{mode==='signup'?'Sign in':'Create an account'}</button></p>}
  <div className="auth-footnote"><ShieldCheck size={15}/> Assessment demo — financial transactions use sandbox mode.</div>
  </div></section></main>;
 }
