@@ -9,10 +9,10 @@
 | Supabase PostgreSQL | Persistent relational data, transactions and immutable ledger journals | Atomic row locks, database constraints, unique idempotency keys, row-level security, proper minor-unit arithmetic |
 | Paystack test APIs | Pay-in, bank lookup, dedicated virtual accounts and transfers | Nigeria-oriented payment sandbox; all test credentials remain on the server |
 | Dojah | Nigerian NIN/BVN and liveness verification | Hosted verification capability; server-side verification gates any financial disbursement |
-| Vercel Hobby | Planned hosting | Hosts the Next.js web app and API routes together; deployment configuration is pending |
+| Vercel Hobby | Public hosting | Hosts the Next.js web app and API routes together; sandbox provider configuration is still required |
 | Vitest | Financial calculation tests | Fast unit tests for determinism, insufficient funds and rounding |
 | GitHub Actions | CI | Reproducible tests and production build after each push |
-| Figma | Product design reference | Defines the target user experience; visual parity requires final UI review |
+| Figma | Product design reference | Guided the horizontal navigation, onboarding progression, wallet dashboards, transaction tables and settings screens |
 
 ## Financial decisions
 
@@ -28,6 +28,6 @@
 
 - Dedicated virtual account provisioning depends on Paystack sandbox eligibility. Provisioning failures must be surfaced without substituting synthetic account details.
 - Dojah's product-specific widget and verification response require configuration and validation in the Dojah sandbox dashboard. The app deliberately keeps users pending until server-side identity **and** liveness verification passes.
-- Additional production work: webhook reconciliation polling, outbox/queue for transfer processing, transactional email delivery, scheduled reminder notifications, admin/pay-in console, audit trail for non-financial actions, rate limits, and full integration/contract/E2E tests.
+- Additional production work: webhook reconciliation polling, outbox/queue for transfer processing, transactional email delivery, scheduled reminder notifications, administrative write operations, audit trail for non-financial actions, rate limits, and full integration/contract/E2E tests.
 - A ledger-centric backend is more work than a mutable `balance` column but makes money movement traceable and transactionally correct.
 - The application is intended for test-mode evaluation and is not configured for live financial transactions.
