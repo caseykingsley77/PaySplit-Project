@@ -14,7 +14,7 @@ export async function authenticate(req: NextRequest) {
  return {user:data.user,db};
 }
 
-type SupabaseFailure={code?:string;message?:string;details?:string};
+type SupabaseFailure={code:string;message:string;details?:string};
 function asDatabaseFailure(err:unknown):SupabaseFailure|null{
  if(!err||typeof err!=='object')return null;
  const e=err as Record<string,unknown>;
