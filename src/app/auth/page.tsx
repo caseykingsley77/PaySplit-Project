@@ -60,7 +60,7 @@ export default function AuthPage(){
    </section>:
    <section className="ps-auth-dialog" role="dialog" aria-modal="true" aria-label={mode==='signin'?'Sign in':mode==='signup'?'Create account':mode==='verify'?'Verify email':'Reset password'}>
     <Link className="ps-auth-x" href="/" aria-label="Close"><X size={20}/></Link>
-    <div className="ps-auth-logo-holder"><BrandMark size={40}/></div>
+    <div className="ps-auth-logo-holder"><BrandMark size={44} tone="black"/></div>
     <h1>{mode==='signin'?'Welcome back!':mode==='signup'?'Create an account':mode==='verify'?'Please check your email':'Reset your password'}</h1>
     <p className="ps-auth-subtitle">{mode==='signin'?'Please enter your details, to log in to your account':mode==='signup'?'Get started with smarter salary management':mode==='verify'?'We’ve sent a confirmation email to '+email:'Enter your email to receive a password reset link'}</p>
     {!configured&&<div className="ps-auth-warning"><ShieldCheck size={17}/> Account services are temporarily unavailable. Authentication configuration is pending.</div>}
