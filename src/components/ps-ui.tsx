@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import {BrandLogo} from '@/components/brand';
 import {ArrowDownRight, ArrowUpRight, ChevronRight, CircleDollarSign, Wallet} from 'lucide-react';
 import type {Activity, Dashboard} from '@/lib/dashboard-types';
 import {naira,formatDay} from '@/lib/dashboard-types';
-export function PsLogo(){return <Link href="/" className="ps-logo"><span className="ps-logo-glyph" aria-hidden="true"><i/></span><span>Paysplit</span></Link>}
+export function PsLogo(){return <Link href="/" className="ps-logo" aria-label="PaySplit home"><BrandLogo variant="dark" markSize={24}/></Link>}
 export function Status({status}:{status:string}){return <span className={'ps-status ps-status-'+status}>{status.replaceAll('_',' ')}</span>}
 export function SectionIntro({title,crumb,action}:{title:string;crumb?:string;action?:React.ReactNode}){return <div className="ps-section-heading"><div><h1>{title}</h1><div className="ps-breadcrumb"><span>Dashboard</span><em>/</em><strong>{crumb||title}</strong></div></div>{action}</div>}
 export function Empty({title,body,action}:{title:string;body:string;action?:React.ReactNode}){return <div className="ps-empty"><div className="ps-empty-circle"><Wallet size={24}/></div><b>{title}</b><p>{body}</p>{action}</div>}
