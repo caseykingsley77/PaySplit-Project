@@ -269,3 +269,63 @@
 @media(max-width:1070px){.ps-metrics-grid{grid-template-columns:repeat(2,1fr)}.ps-wallet-card-grid{grid-template-columns:repeat(2,1fr)}.ps-chart-grid{grid-template-columns:1fr 300px}.ps-hero-notification{left:46%}}
 @media(max-width:790px){.ps-topnav{padding:0 17px}.ps-main-nav{position:absolute;top:68px;left:0;right:0;transform:none;background:#fff;display:none;height:auto;padding:12px 15px;border-bottom:1px solid #e8edf2;box-shadow:0 10px 30px rgba(0,0,0,.08)}.ps-main-nav.expanded{display:flex;flex-wrap:wrap}.ps-main-nav button{padding:12px 10px}.ps-mobile-menu{display:grid!important}.ps-profile-trigger{font-size:0}.ps-profile-trigger svg{display:none}.ps-dashboard-hero{height:auto;min-height:180px;align-items:flex-end}.ps-hero-notification{display:none}.ps-dashboard-bottom,.ps-chart-grid,.ps-profile-layout{grid-template-columns:1fr}.ps-wallet-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ps-onboarding-banner{flex-direction:column;align-items:stretch}.ps-profile-sidebar{order:2}.ps-profile-form{order:1}}
 @media(max-width:520px){.ps-section-heading{flex-direction:column;align-items:stretch}.ps-section-heading>button{align-self:flex-start}.ps-metrics-grid{gap:8px}.ps-metric-card{padding:15px 12px;min-height:118px}.ps-metric-card>strong{font-size:20px}.ps-dashboard-hero{padding:25px 16px;gap:13px;flex-direction:column;align-items:flex-start}.ps-dashboard-greeting h1{font-size:26px}.ps-hero-buttons{width:100%}.ps-hero-buttons button{flex:1}.ps-dashboard-body{padding:0 13px 30px}.ps-chart-header{flex-direction:column}.ps-chart-key{justify-content:flex-end}.ps-wallet-card-grid{grid-template-columns:1fr}.ps-content-panel{margin:0 13px 25px;padding:9px}.ps-section-heading{padding:24px 15px 14px}.ps-tab-chips{margin-left:13px}.ps-rules-summary{grid-template-columns:1fr 1fr;padding:14px}.ps-rules-summary>div:nth-child(3){text-align:left}.ps-rules-summary>div:nth-child(2){text-align:right}.ps-profile-layout{display:flex;flex-direction:column}.ps-form-grid{grid-template-columns:1fr}.ps-auth-dialog{padding:20px 16px 0}.ps-auth-bottom{margin:15px -16px 0}.ps-welcome-steps{grid-template-columns:1fr}.ps-welcome-sunburst{height:125px}.ps-welcome-check{width:90px;height:90px}.ps-otp-row{gap:4px}.ps-otp-row input{height:44px;font-size:16px}.ps-auth-footer-actions{flex-direction:column}.ps-modal-footer{flex-direction:column}.ps-modal-footer>*{width:100%}.ps-choose-destination{grid-template-columns:1fr}}
+
+
+/* Identity verification and financial setup flows */
+.ps-onboarding{background:#f8fafc;min-height:100vh}
+.ps-onboarding-header{height:68px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 3vw;background:white;border-bottom:1px solid #e4e8eb}
+.ps-onboarding-header nav{display:flex;align-items:center;gap:26px}
+.ps-onboarding-header nav a{font-size:11px;color:#344452}
+.ps-kyc-wrap{max-width:1500px;margin:auto;padding-bottom:40px}
+.ps-kyc-wrap .ps-section-heading{padding-bottom:14px}
+.ps-kyc-shell{display:grid;grid-template-columns: minmax(210px,.55fr) minmax(0,1.1fr);gap:12px;background:white;border:1px solid #e4e7eb;border-radius:16px;padding:10px;margin:0 3vw 30px;min-height:560px}
+.ps-kyc-progress{background:linear-gradient(135deg,#e9f6ff,#fff);border-radius:14px;min-height:510px;padding:38px 26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.ps-id-illustration{display:grid;place-items:center;color:#728899;background:#e2edf4;border:1px solid white;border-radius:13px;width:68px;height:75px;margin-bottom:20px}
+.ps-kyc-step{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:54px;font-size:12px;color:#8b99a4}
+.ps-kyc-step>span{border:1px solid #c0cbd4;color:#a3adb5;border-radius:50%;height:17px;width:17px;display:grid;place-items:center;font-size:10px}
+.ps-kyc-step b{font-weight:400}
+.ps-kyc-step.current{color:#219ce9}
+.ps-kyc-step.current>span{background:#2aa3ee;border-color:#2aa3ee;color:white}
+.ps-kyc-step.complete>span{background:#152c38;border-color:#152c38;color:white}
+.ps-kyc-progress>p{font-size:11px;line-height:1.6;max-width:175px;text-align:center;margin-top:5px;color:#485f70}
+.ps-kyc-card{border:1px solid #e5e9ee;border-radius:14px;padding:12px;display:flex;flex-direction:column}
+.ps-kyc-actions{display:flex;justify-content:space-between;padding:5px 3px 15px}
+.ps-kyc-content{border:1px solid #e7edf1;border-radius:13px;padding:35px clamp(16px,5vw,65px);flex:1;position:relative;min-height:440px}
+.ps-kyc-content form,.ps-kyc-content>div{display:flex;flex-direction:column;gap:15px;min-height:100%}
+.ps-kyc-content h2{font-size:19px;font-weight:500}
+.ps-kyc-content p{font-size:12px;color:#718190;line-height:1.6}
+.ps-kyc-content label,.ps-financial-form label{display:flex;flex-direction:column;gap:8px;color:#3c5061;font-size:11px}
+.ps-kyc-content .ps-kyc-continue{margin-top:auto;width:100%;border-radius:8px}
+.ps-id-methods{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ps-id-methods button{display:flex;align-items:flex-start;flex-direction:column;border:1px solid #e5e9ec;border-radius:11px;padding:15px 14px;background:#fff;text-align:left;gap:6px;font-size:12px;color:#1b2b38}
+.ps-id-methods button.selected{border-color:#233c50;background:#faffff}
+.ps-id-methods button small{font-size:10px;color:#83919c}
+.ps-identity-secure{border:1px solid #c6e3f3;background:#f3faff;border-radius:10px;padding:15px;display:flex;align-items:center;gap:12px;color:#2194d9}
+.ps-identity-secure p{font-size:11px;color:#5b788c}
+.ps-liveness-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;background:linear-gradient(120deg,#eef7fc,#fff);border-radius:15px;padding:30px;min-height:175px;color:#2ba3f1}
+.ps-liveness-placeholder strong{font-size:13px;color:#2d4b61}
+.ps-liveness-placeholder small{font-size:11px;color:#718592;text-align:center}
+.ps-liveness-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ps-financial-backdrop{min-height:calc(100vh - 68px);display:grid;place-items:center;padding:35px 16px;background:radial-gradient(ellipse at 55% 25%,#1b414c,#0c1e27 48%,#071015 90%)}
+.ps-financial-modal{width:min(630px,100%);background:#fff;border-radius:17px;box-shadow:0 24px 70px rgba(0,0,0,.24);padding:24px 22px 0}
+.ps-financial-modal>h1{font-size:23px;font-weight:600;text-align:center}
+.ps-financial-modal>p{text-align:center;font-size:11px;color:#718393;margin:7px 0 25px}
+.ps-financial-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:start;margin:0 30px 23px;position:relative}
+.ps-financial-progress:before{content:'';position:absolute;z-index:0;height:2px;background:#d9e1e8;left:11%;right:11%;top:19px}
+.ps-financial-progress>div{position:relative;z-index:1;display:flex;align-items:center;flex-direction:column;gap:5px;text-align:center;color:#9ca7ad}
+.ps-financial-progress>div>span{width:40px;height:40px;border:1px solid #d6dce1;border-radius:9px;background:#fff;display:grid;place-items:center}
+.ps-financial-progress>div.current>span{background:#dff2ff;border-color:#dff2ff;color:#259eed}
+.ps-financial-progress>div.current{color:#223746}
+.ps-financial-progress b{font-size:11px;font-weight:500}
+.ps-financial-progress small{font-size:10px;color:#8594a0}
+.ps-financial-form{display:flex;flex-direction:column;gap:13px}
+.ps-financial-form h2{font-size:15px;font-weight:500;margin:8px 0}
+.ps-financial-footer{display:flex;gap:10px;justify-content:flex-end;margin:15px -22px 0;padding:16px 22px;border-top:1px solid #e9eef0}
+.ps-financial-footer button{flex:1}
+.ps-financial-footer .ps-blue-btn{flex:1.5}
+.ps-onboard-done{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:45px 20px;text-align:center;background:#f8fafc}
+.ps-onboard-done-icon{display:grid;place-items:center;width:105px;height:105px;border-radius:50%;background:linear-gradient(#062c40,#35a8f1);color:#fff}
+.ps-onboard-done h1{font-size:28px;margin:21px 0 9px}
+.ps-onboard-done p{max-width:570px;color:#798895;font-size:13px;line-height:1.7;margin-bottom:23px}
+@media(max-width:790px){.ps-onboarding-header{padding:0 16px}.ps-onboarding-header nav{display:none}.ps-kyc-shell{grid-template-columns:1fr}.ps-kyc-progress{min-height:0;padding:25px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ps-id-illustration,.ps-kyc-progress>p{display:none}.ps-kyc-content{padding:25px 16px}.ps-financial-progress{margin-left:0;margin-right:0}.ps-financial-backdrop{padding:20px 13px}}
+@media(max-width:480px){.ps-financial-modal{padding:22px 15px 0}.ps-financial-modal>h1{font-size:19px}.ps-financial-progress small{font-size:8px}.ps-financial-footer{margin:15px -15px 0;padding:13px;flex-wrap:wrap}.ps-financial-footer button{min-width:100px}.ps-id-methods,.ps-liveness-actions{grid-template-columns:1fr}}
