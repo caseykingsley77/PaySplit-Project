@@ -70,3 +70,27 @@
  .lp-hero-photo-img{object-position:62% 55%}
  .lp-hero-glow{background:linear-gradient(180deg,#040a0d 0%,#040a0d 25%,rgba(3,11,16,.78) 42%,rgba(3,11,16,.12) 74%)}
 }
+
+
+/* Photographic hero: supplied PaySplit laptop visual, instead of a CSS device. */
+.lp-header{background:#050809}
+.lp-hero{background:#050b0e}
+.lp-hero-photograph{position:absolute;z-index:0;pointer-events:none;inset:0 0 0 23%;overflow:hidden}
+.lp-hero-photo-img{object-fit:cover;object-position:50% 51%}
+.lp-hero-photograph::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#050b0e 0%,rgba(5,11,14,.8) 12%,rgba(5,11,14,.15) 29%,transparent 46%)}
+.lp-hero-glow{display:none}
+.lp-hero-copy{z-index:2}
+.lp-hero-copy h1{text-shadow:0 1px 12px rgba(0,0,0,.2)}
+@media(max-width:1100px){.lp-hero-photograph{left:22%}.lp-hero-photo-img{object-position:45% center}}
+@media(max-width:800px){
+ .lp-hero{min-height:820px;background:linear-gradient(130deg,#050809,#081923)}
+ .lp-hero-photograph{inset:340px -10% 0 -7%}
+ .lp-hero-photo-img{object-position:45% center}
+ .lp-hero-photograph::after{background:linear-gradient(180deg,#071015 0%,rgba(7,16,21,.32) 25%,transparent 55%)}
+}
+@media(max-width:540px){
+ .lp-hero{min-height:770px}
+ .lp-hero-copy{padding-top:85px}
+ .lp-hero-photograph{inset:340px -30% 0 -15%}
+ .lp-hero-photo-img{object-position:44% center}
+}
