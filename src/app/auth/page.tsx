@@ -1,47 +1,84 @@
 'use client';
-import {useEffect,useState} from 'react';
-import {ArrowRight,CheckCircle2,ShieldCheck,GitBranch,Wallet} from 'lucide-react';
-import {supabaseBrowser} from '@/lib/supabase';
+import {useEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
-const authConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-export default function Home(){
- const router=useRouter();const [mode,setMode]=useState<'signin'|'signup'>('signup');
- const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[fullName,setFullName]=useState('');
- const [busy,setBusy]=useState(false),[notice,setNotice]=useState('');
- useEffect(()=>{const m=new URLSearchParams(window.location.search).get('mode');if(m==='signin')setMode('signin');if(m==='signup')setMode('signup');},[]);
- useEffect(()=>{if(!authConfigured)return;supabaseBrowser().auth.getSession().then(({data})=>{if(data.session)router.replace('/dashboard');}).catch(()=>setNotice('Unable to connect to the account service. Please try again.'));},[router]);
- async function submit(e:React.FormEvent){
- e.preventDefault();setBusy(true);setNotice('');
+import Link from 'next/link';
+import {ArrowRight,Check,Eye,EyeOff,LockKeyhole,Mail,ShieldCheck,X} from 'lucide-react';
+import MarketingLanding from '@/components/marketing-landing';
+import {supabaseBrowser} from '@/lib/supabase';
+type Mode='signin'|'signup'|'verify'|'welcome'|'reset';
+const configured=Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+export default function AuthPage(){
+ const router=useRouter();
+ const [mode,setMode]=useState<Mode>('signin'),[email,setEmail]=useState(''),[password,setPassword]=useState('');
+ const [first,setFirst]=useState(''),[last,setLast]=useState(''),[showPassword,setShowPassword]=useState(false);
+ const [otp,setOtp]=useState(['','','','','','']),[busy,setBusy]=useState(false),[error,setError]=useState(''),[info,setInfo]=useState('');
+ const codeRefs=useRef<Array<HTMLInputElement|null>>([]);
+ useEffect(()=>{const u=new URLSearchParams(window.location.search),requested=u.get('mode');if(requested==='signup')setMode('signup');else if(requested==='reset')setMode('reset');else setMode('signin');
+  if(configured){supabaseBrowser().auth.getSession().then(({data})=>{if(data.session&&u.get('confirmed')==='1')setMode('welcome');else if(data.session)router.replace('/dashboard');}).catch(()=>{});}
+ },[router]);
+ function changeMode(next:Mode){setMode(next);setError('');setInfo('');setOtp(['','','','','','']);}
+ async function submit(event:React.FormEvent){event.preventDefault();if(!configured)return;
+ setBusy(true);setError('');setInfo('');
  try{
- const supabase=supabaseBrowser();
- if(mode==='signup'){
- const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:fullName}}});
- if(error)throw error;
- if(data.session)router.push('/dashboard');
- else setNotice('Check your inbox for the confirmation link, then sign in.');
- }else{
- const {error}=await supabase.auth.signInWithPassword({email,password});
- if(error)throw error;router.push('/dashboard');
+  const client=supabaseBrowser();
+  if(mode==='signin'){
+   const {error:e}=await client.auth.signInWithPassword({email,password});if(e)throw e;
+   router.push('/dashboard');return;
+  }
+  if(mode==='signup'){
+   if(!first.trim()||!last.trim())throw new Error('Enter your first and last name');
+   const {data,error:e}=await client.auth.signUp({email,password,options:{data:{first_name:first.trim(),last_name:last.trim(),full_name:first.trim()+' '+last.trim()},emailRedirectTo:window.location.origin+'/auth?confirmed=1'}});
+   if(e)throw e;
+   if(data.session){setMode('welcome');return;}
+   setMode('verify');setInfo('Check your inbox for your confirmation email. If it contains a code, enter it below; otherwise follow the confirmation link.');
+  }
+  if(mode==='verify'){
+   if(otp.join('').length!==6)throw new Error('Enter the six-digit email verification code');
+   const {error:e}=await client.auth.verifyOtp({email,token:otp.join(''),type:'signup'});if(e)throw e;
+   setMode('welcome');
+  }
+  if(mode==='reset'){
+   const {error:e}=await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/auth?mode=signin'});if(e)throw e;
+   setInfo('If an account exists for this address, a password reset link has been sent.');
+  }
+ }catch(e){setError(e instanceof Error?e.message:'Unable to complete this request');}finally{setBusy(false);}
  }
- }catch(err){setNotice(err instanceof Error?err.message:'Something went wrong');}finally{setBusy(false);}
- }
- return <main className="auth-page"><section className="auth-hero">
- <div className="brand brand-light"><span className="brand-icon"><GitBranch size={20}/></span>PaySplit<span className="brand-dot">.</span></div>
- <div className="hero-inner"><div className="eyebrow inverse">YOUR SALARY. YOUR RULES.</div>
- <h1>Make every payday <em>count.</em></h1>
- <p>Pay yourself first, take care of the people you love, and save toward what matters. Automatically.</p>
- <div className="hero-feature"><Wallet/> One salary. Unlimited possibilities.</div>
- <div className="hero-steps"><div><CheckCircle2 size={18}/> Set your rules</div><div><CheckCircle2 size={18}/> Get paid</div><div><CheckCircle2 size={18}/> We handle the rest</div></div>
- </div><div className="hero-bottom"><ShieldCheck size={18}/> Built with security and transparency at its core</div>
- </section><section className="auth-main"><div className="auth-card">
- <span className="pill">WELCOME TO BETTER MONEY</span><h2>{mode==='signup'?'Create your account':'Welcome back'}</h2>
- <p className="muted">{mode==='signup'?'Start organizing your money in just a few steps.':'Sign in to your PaySplit account.'}</p>
- {!authConfigured?<div role="status" className="notice">Account services are temporarily unavailable. Please check back shortly.</div>:<form onSubmit={submit} className="form-stack">{mode==='signup'&&<label>Full name<input required minLength={2} placeholder="Your full name" value={fullName} onChange={e=>setFullName(e.target.value)}/></label>}
- <label>Email address<input required type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/></label>
- <label>Password<input required type="password" autoComplete={mode==='signup'?'new-password':'current-password'} minLength={8} placeholder="At least 8 characters" value={password} onChange={e=>setPassword(e.target.value)}/></label>
- {notice&&<div role="status" className="notice">{notice}</div>}
- <button className="primary-btn full" disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create account':'Sign in'} <ArrowRight size={18}/></button></form>}
- {authConfigured&&<p className="auth-switch">{mode==='signup'?'Already have an account?':'New to PaySplit?'} <button className="text-link" onClick={()=>{setMode(mode==='signup'?'signin':'signup');setNotice('');}}>{mode==='signup'?'Sign in':'Create an account'}</button></p>}
- <div className="auth-footnote"><ShieldCheck size={15}/> PaySplit secure account access</div>
- </div></section></main>;
+ async function resend(){setBusy(true);setError('');try{const {error:e}=await supabaseBrowser().auth.resend({type:'signup',email});if(e)throw e;setInfo('A fresh verification email has been requested.');}catch(e){setError(e instanceof Error?e.message:'Could not resend email');}finally{setBusy(false);}}
+ function codeChange(index:number,value:string){const digits=value.replace(/\D/g,'');if(digits.length>1){const next=Array.from({length:6},(_,i)=>digits[i]||'');setOtp(next);codeRefs.current[Math.min(5,digits.length)]?.focus();return;}
+ const next=[...otp];next[index]=digits.slice(-1);setOtp(next);if(digits&&index<5)codeRefs.current[index+1]?.focus();}
+ return <div className="ps-auth-wrap">
+  <div className="ps-auth-background" aria-hidden="true"><MarketingLanding/></div>
+  <Link href="/" className="ps-auth-close-page" aria-label="Return to PaySplit homepage"><X size={18}/></Link>
+  <main className="ps-auth-overlay">
+   {mode==='welcome'?<section className="ps-auth-dialog ps-welcome" role="dialog" aria-modal="true" aria-label="Account created">
+    <div className="ps-welcome-sunburst"><div className="ps-welcome-check"><Check size={62}/></div></div>
+    <h1>Welcome to PaySplit{first?', '+first:''}!</h1>
+    <p>Your account is ready. Set up identity verification and your salary allocation rules to get started.</p>
+    <div className="ps-welcome-steps"><div><span>✦ Step 1</span><b>Profile & Identity Verification</b><small>Secure verification through a trusted provider</small></div><div><span>✦ Step 2</span><b>Setup Checklist</b><small>Income, wallets, beneficiaries & split rules</small></div></div>
+    <div className="ps-auth-footer-actions"><button type="button" className="ps-outline-btn" onClick={()=>router.push('/dashboard')}>Go to Dashboard</button><button type="button" className="ps-blue-btn" onClick={()=>router.push('/onboarding')}>Continue to KYC <ArrowRight size={16}/></button></div>
+   </section>:
+   <section className="ps-auth-dialog" role="dialog" aria-modal="true" aria-label={mode==='signin'?'Sign in':mode==='signup'?'Create account':mode==='verify'?'Verify email':'Reset password'}>
+    <Link className="ps-auth-x" href="/" aria-label="Close"><X size={20}/></Link>
+    <div className="ps-auth-logo" aria-hidden="true"><span/></div>
+    <h1>{mode==='signin'?'Welcome back!':mode==='signup'?'Create an account':mode==='verify'?'Please check your email':'Reset your password'}</h1>
+    <p className="ps-auth-subtitle">{mode==='signin'?'Please enter your details, to log in to your account':mode==='signup'?'Get started with smarter salary management':mode==='verify'?'We’ve sent a confirmation email to '+email:'Enter your email to receive a password reset link'}</p>
+    {!configured&&<div className="ps-auth-warning"><ShieldCheck size={17}/> Account services are temporarily unavailable. Authentication configuration is pending.</div>}
+    {info&&<div className="ps-auth-info" role="status"><Mail size={16}/>{info}</div>}
+    {error&&<div className="ps-auth-error" role="alert">{error}</div>}
+    <form onSubmit={submit} className="ps-auth-form">
+     {mode==='signup'&&<div className="ps-auth-name-row"><label>First Name<input value={first} onChange={e=>setFirst(e.target.value)} required minLength={1} placeholder="Enter first name" autoComplete="given-name"/></label><label>Last Name<input value={last} onChange={e=>setLast(e.target.value)} required minLength={1} placeholder="Enter last name" autoComplete="family-name"/></label></div>}
+     {mode!=='verify'&&<label>Email address<input type="email" required autoComplete="email" placeholder="Enter your email" value={email} onChange={e=>setEmail(e.target.value)}/></label>}
+     {(mode==='signin'||mode==='signup')&&<label>Password<div className="ps-password-field"><input type={showPassword?'text':'password'} minLength={8} required autoComplete={mode==='signup'?'new-password':'current-password'} placeholder="At least 8 characters" value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(!showPassword)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>}
+     {mode==='verify'&&<div className="ps-otp-row">{otp.map((digit,i)=><input key={i} aria-label={'Verification digit '+(i+1)} ref={e=>{codeRefs.current[i]=e;}} value={digit} onChange={e=>codeChange(i,e.target.value)} onKeyDown={e=>{if(e.key==='Backspace'&&!digit&&i>0)codeRefs.current[i-1]?.focus();}} inputMode="numeric" autoComplete={i===0?'one-time-code':'off'} maxLength={1}/>)}</div>}
+     {mode==='signin'&&<div className="ps-auth-helper"><span><LockKeyhole size={14}/> Secure sign in</span><button type="button" onClick={()=>changeMode('reset')}>Forgot password?</button></div>}
+     {mode==='verify'&&<p className="ps-resend">Didn't get a code? <button type="button" disabled={!configured||busy} onClick={()=>void resend()}>Click to resend.</button></p>}
+     <button disabled={!configured||busy} type="submit" className="ps-auth-submit">{busy?'Please wait…':mode==='signin'?'Confirm':mode==='signup'?'Create account':mode==='verify'?'Verify email':'Send reset link'}</button>
+    </form>
+    <div className="ps-auth-bottom">
+     {mode==='signin'?"Don’t have an account? ":mode==='signup'?'Already have an account? ':mode==='verify'?'Wrong email address? ':'Remembered your password? '}
+     <button type="button" onClick={()=>changeMode(mode==='signin'?'signup':'signin')}>{mode==='signin'?'Create One':mode==='verify'?'Change email':'Sign in'}</button>
+    </div>
+   </section>}
+  </main>
+ </div>;
 }
