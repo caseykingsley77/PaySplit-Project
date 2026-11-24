@@ -381,3 +381,14 @@
 .lp-brand .paysplit-brand{font-size:16px;font-weight:500;line-height:1;}
 .lp-ui-brand svg{display:block;}
 @media(max-width:540px){.lp-brand .paysplit-brand{font-size:14px;}}
+
+
+/* Email confirmation: link-first, with optional six-digit code input. */
+.ps-verify-options{display:flex;flex-direction:column;gap:12px;text-align:center}
+.ps-verify-primary{background:#f3f9fe;border:1px solid #d4eafa;border-radius:9px;color:#365b70;font-size:12px;line-height:1.65;padding:13px 15px}
+.ps-verify-primary strong{font-weight:700;color:#124d75}
+.ps-verify-toggle{border:0;background:none;color:#168de0;font-size:12px;text-decoration:underline;cursor:pointer;padding:6px 8px}
+.ps-verify-code-note{text-align:center;font-size:11px;color:#6f8294}
+.ps-verify-options .ps-otp-row{margin:0 0 8px}
+.ps-resend{line-height:1.6;margin:8px 0;text-align:center}
+.ps-resend button:disabled{opacity:.5;cursor:not-allowed}
