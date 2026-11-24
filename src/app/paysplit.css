@@ -372,3 +372,5 @@
 .ps-admin-login>footer a{color:#259be4}
 @media(max-width:850px){.ps-admin-two,.ps-admin-profile-data{grid-template-columns:1fr}.ps-admin .ps-metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ps-admin-wallets{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.ps-admin-content{padding:20px 13px}.ps-admin .ps-metrics-grid,.ps-admin .ps-admin-three{grid-template-columns:repeat(2,minmax(0,1fr))}.ps-admin-wallets{grid-template-columns:1fr}.ps-admin-user-tabs{flex-wrap:wrap;gap:3px}.ps-admin-user-banner h2{font-size:18px}.ps-admin-user-banner p{line-height:1.7}}
+
+.ps-preview-banner{padding:10px 4vw;background:#fff9df;color:#69582a;border-bottom:1px solid #f3df9f;font-size:11px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}.ps-preview-banner strong{font-size:11px}.ps-preview-banner a{margin-left:auto;color:#187dbf;text-decoration:underline}
