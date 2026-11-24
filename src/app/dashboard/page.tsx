@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/navigation';
+import Link from 'next/link';
 import {LayoutDashboard,Wallet,Users,GitBranch,History,Settings,ShieldCheck,Plus,ArrowRight,ArrowDownLeft,ArrowUpRight,Copy,LogOut,RefreshCw,Download,CalendarDays,Building2,PlayCircle,PauseCircle,AlertTriangle,CheckCircle2,ChevronRight,Search,Send,Loader2,X,Menu} from 'lucide-react';
 import {supabaseBrowser} from '@/lib/supabase';
 import {api,send} from '@/lib/api';
@@ -45,7 +46,7 @@ export default function Dashboard(){
  async function signOut(){await supabaseBrowser().auth.signOut();router.replace('/');}
  async function download(){await action(async()=>{const {data:{session}}=await supabaseBrowser().auth.getSession();const r=await fetch('/api/statements',{headers:{Authorization:'Bearer '+session?.access_token}});if(!r.ok)throw new Error('Statement download failed');const url=URL.createObjectURL(await r.blob());const a=document.createElement('a');a.href=url;a.download='paysplit-statement.csv';a.click();URL.revokeObjectURL(url);},'Statement downloaded.');}
  const nextPayday=()=>{const d=new Date(),n=data?.profile.expected_salary_day||25;for(let i=0;i<3;i++){const y=d.getFullYear(),m=d.getMonth()+i,day=Math.min(n,new Date(y,m+1,0).getDate()),t=new Date(y,m,day);if(t>=new Date(y,d.getMonth(),d.getDate()))return t.toLocaleDateString('en-NG',{day:'numeric',month:'long',year:'numeric'});}return 'Not set';};
- if(!authConfigured)return <main className="service-unavailable"><div className="service-unavailable-card"><ShieldCheck size={32}/><h1>Account service unavailable</h1><p>PaySplit account services are temporarily unavailable. Please try again later.</p><a className="outline-btn" href="/">Return to homepage <ArrowRight size={16}/></a></div></main>;
+ if(!authConfigured)return <main className="service-unavailable"><div className="service-unavailable-card"><ShieldCheck size={32}/><h1>Account service unavailable</h1><p>PaySplit account services are temporarily unavailable. Please try again later.</p><Link className="outline-btn" href="/">Return to homepage <ArrowRight size={16}/></Link></div></main>;
  if(loading)return <div className="loading-screen"><Loader2 className="spin"/> Loading your workspace…</div>;
  return <div className="app-shell"><aside className={'sidebar '+(menu?'sidebar-show':'')}><div className="sidebar-head"><div className="brand"><span className="brand-icon"><GitBranch size={20}/></span>PaySplit<span className="brand-dot">.</span></div><button className="icon-btn mobile-only" onClick={()=>setMenu(false)}><X/></button></div><div className="sidebar-label">WORKSPACE</div>
  <nav aria-label="Primary">{nav.map(([key,label,Icon])=><button className={'nav-link '+(tab===key?'active':'')} key={key} onClick={()=>{setTab(key);setMenu(false);}}><Icon size={19}/>{label}{tab===key&&<ChevronRight size={16} className="nav-arrow"/>}</button>)}</nav><div className="sidebar-bottom"><div className="sandbox-note"><ShieldCheck size={19}/><div><b>Sandbox environment</b><small>No real funds are moved</small></div></div><button className="sidebar-logout" onClick={signOut}><LogOut size={18}/> Sign out</button></div></aside>
