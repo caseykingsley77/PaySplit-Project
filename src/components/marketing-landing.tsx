@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import {BrandLogo,BrandMark} from '@/components/brand';
+import {BrandLogo} from '@/components/brand';
 import {ArrowRight, Download, LockKeyhole, Plus, Wallet} from 'lucide-react';
 
 function AppleBadge(){
