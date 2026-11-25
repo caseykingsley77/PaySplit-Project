@@ -17,6 +17,7 @@ export default function AuthPage(){
  useEffect(()=>{const u=new URLSearchParams(window.location.search),requested=u.get('mode');if(requested==='signup')setMode('signup');else if(requested==='reset')setMode('reset');else setMode('signin');
   if(configured){supabaseBrowser().auth.getSession().then(({data})=>{if(data.session)router.replace('/dashboard');}).catch(()=>{});}
  },[router]);
+ useEffect(()=>{if(mode==='verify')codeRefs.current[0]?.focus();},[mode]);
  function changeMode(next:Mode){setMode(next);setError('');setInfo('');setOtp(['','','','','','']);}
  async function submit(event:React.FormEvent){event.preventDefault();if(!configured)return;
  setBusy(true);setError('');setInfo('');
@@ -31,7 +32,7 @@ export default function AuthPage(){
    const {data,error:e}=await client.auth.signUp({email,password,options:{data:{first_name:first.trim(),last_name:last.trim(),full_name:first.trim()+' '+last.trim()}}});
    if(e)throw e;
    if(data.session){await client.auth.signOut();throw new Error('Email confirmation is disabled in Supabase. Enable it so signups require a six-digit verification code.');}
-   setOtp(['','','','','','']);setMode('verify');setInfo('Enter the six-digit code from your verification email. Check spam if you cannot find it.');
+   setOtp(['','','','','','']);setMode('verify');
   }
   if(mode==='verify'){
    if(otp.join('').length!==6)throw new Error('Enter the six-digit email verification code');
