@@ -6,7 +6,7 @@ A Next.js full-stack fintech sandbox application. Users define how confirmed inc
 
 ## Features currently implemented
 
-- Supabase Auth email/password signup, confirmation-link verification (with optional email OTP), sign-in and token-validated backend routes.
+- Supabase Auth email/password signup, six-digit email OTP verification (no signup confirmation link), sign-in and token-validated backend routes.
 - Dashboard, wallets with savings targets, beneficiaries with Paystack bank-account lookup, rules, profile and transaction history.
 - Paystack *test mode* collection account provisioning, hosted test salary checkout, signed pay-in webhook and beneficiary-transfer initiation.
 - Immutable balanced ledger, integer-kobo amounts, per-salary exactly-once split initiation, deterministic rule priority, skip-on-insufficient-funds and provider-confirmed settlement/reversal.
@@ -31,7 +31,7 @@ npm test
 npm run build
 ```
 
-Open http://localhost:3000. Sign up and verify the email as configured in Supabase Authentication settings. For a public signup workflow, configure a custom SMTP sender and see [email verification setup and troubleshooting](docs/AUTH_EMAIL_SETUP.md).
+Open http://localhost:3000. To make registration OTP-only, replace the Supabase **Confirm signup** email template with [supabase/email-templates/confirm-signup.html](supabase/email-templates/confirm-signup.html) (containing `{{ .Token }}` and no confirmation link) and keep **Confirm email** enabled. For production email delivery, configure a custom SMTP sender and follow [email verification setup and troubleshooting](docs/AUTH_EMAIL_SETUP.md).
 
 ## Dashboard error: database not initialized
 
