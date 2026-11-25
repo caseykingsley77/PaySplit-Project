@@ -1,71 +1,47 @@
-# PaySplit: email confirmation setup and troubleshooting
+# PaySplit: OTP-only signup verification
 
-PaySplit uses Supabase Auth for email-password registration. The website supports **confirmation links** (recommended default) and an optional **email verification code**.
+PaySplit's email/password signup uses a **six-digit email OTP**, not a confirmation link. The authentication screen always shows six code inputs and verifies with:
 
-## 1. Check the email confirmation settings
-
-In your Supabase project:
-1. Go to **Authentication → Sign In / Providers → Email**. Keep **Confirm email** enabled.
-2. Go to **Authentication → Email Templates → Confirm sign up**.
-3. Ensure the template contains a working confirmation link. For example:
-
-```html
-<h2>Confirm your PaySplit email</h2>
-<p>Click below to activate your account:</p>
-<p><a href="{{ .ConfirmationURL }}">Confirm your email</a></p>
+```ts
+await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
 ```
 
-PaySplit now shows a *click the link* instruction after registration. Once Supabase verifies the confirmation link, the browser is redirected back to the PaySplit app.
+The signup flow uses `supabase.auth.signUp({ email, password, options: { data } })`. The resend button requests `supabase.auth.resend({ type: 'signup', email })`. Codes are one-time use and are checked by Supabase, not the frontend.
 
-If you also want a code in the email, add an OTP token line to that same template:
+## Required Supabase dashboard configuration
 
-```html
-<p>Or enter this verification code in PaySplit: <strong>{{ .Token }}</strong></p>
-```
+**Updating the React app alone cannot change what Supabase emails.** Configure the actual hosted project's template:
 
-The confirmation screen has a **My email contains a six-digit code** option. Leave this collapsed when the template sends a link only.
+1. Open [Supabase authentication templates](https://supabase.com/dashboard/project/qunakncthxfyujdydzmx/auth/templates).
+2. Select **Confirm signup** (not Magic Link). Leave **Confirm email** turned on in Authentication → Sign In / Providers → Email.
+3. Set the subject to `{{ .Token }} is your PaySplit verification code`.
+4. Replace the template body with [supabase/email-templates/confirm-signup.html](../supabase/email-templates/confirm-signup.html). The critical variable is **`{{ .Token }}`**. Do **not** include `{{ .ConfirmationURL }}` or confirmation buttons/links.
+5. Save the template and send a test signup using a fresh email address.
 
-## 2. Configure your redirect URL
+In Supabase's confirmation template, `{{ .Token }}` is the six-digit OTP generated for the signup. The user reads it and enters it in the PaySplit interface. `verifyOtp` returns the session on success.
 
-In **Authentication → URL Configuration**:
+## Deliverability / SMTP
 
-- **Site URL:** `https://paysplit-project.vercel.app`
-- **Redirect URLs:** `https://paysplit-project.vercel.app/auth?confirmed=1`
+Supabase's default mail service has restrictions and low sending limits. To register arbitrary customers reliably, enable **Custom SMTP** in Supabase's authentication settings and configure an approved provider (Resend, Postmark, Brevo, Amazon SES, etc.). Verify your sending domain's SPF and DKIM records.
 
-This matches the `emailRedirectTo` parameter used by signup and resend.
+If the OTP does not arrive, inspect Supabase **Auth Logs**, the SMTP provider's message status, spam/promotions folders, and any email rate-limit errors. The client shows a confirmation that sending was *requested*, not proof of delivery.
 
-## 3. Set up outgoing email
+## Testing
 
-Supabase's built-in SMTP is for basic testing, is restricted to authorized addresses (typically members of your Supabase organization), and has low sending limits. **For signup emails to arbitrary customers, configure a custom SMTP provider.**
+1. Open [PaySplit registration](https://paysplit-project.vercel.app/auth?mode=signup).
+2. Create an account with an email address that is not already registered.
+3. Check that the email contains **six digits** and **no confirmation link**.
+4. Enter each digit (or paste the six-digit code) into PaySplit and select **Verify email**.
+5. Confirm that Supabase marks the user email as verified and that PaySplit opens the welcome/setup screen.
+6. To test resend, use the **Click to resend** control with normal cooldown/rate limits.
 
-In Supabase go to **Project Settings → Authentication → SMTP Settings** (or **Authentication → SMTP Settings**, depending on dashboard version), enable **Custom SMTP**, and supply your email provider's host, port, username, password and verified sender address.
+Existing users with previously confirmed emails can sign in normally; they do not need to verify again.
 
-Supported examples include Resend, Postmark, Brevo, SendGrid and Amazon SES. Verify the sending domain with SPF, DKIM and DMARC as directed by your provider. Store SMTP credentials in Supabase's settings, not in the GitHub repository or frontend code.
+**Security:** Never disable email confirmation merely to get through signup, never log the OTP or store it in the PaySplit database, and never put SMTP passwords or Supabase secret keys in frontend code.
 
-## 4. Diagnose missing email
+## Supabase references
 
-1. Open **Supabase → Logs → Auth Logs** around the time of signup or resend.
-2. Look for provider or SMTP errors, especially `email_address_not_authorized`, `email_rate_limit_exceeded` and delivery failures.
-3. Inspect your SMTP provider's message activity, including rejected/bounced messages.
-4. Check the intended inbox's Spam, Promotions, Social and All Mail folders.
-5. Avoid repeated resend clicks while under a rate limit. Fix the email provider configuration before trying again.
-
-Supabase accepting an auth request does **not** guarantee final delivery to the inbox. PaySplit now describes successful resend API responses as *requested*, rather than declaring the message delivered.
-
-## 5. Test the complete registration
-
-1. Use a fresh test email address.
-2. Register at `https://paysplit-project.vercel.app/auth?mode=signup`.
-3. Confirm that the email provider accepted and delivered the email.
-4. Click the confirmation link or enter the code if the template includes `{{ .Token }}`.
-5. Check that the user becomes email-confirmed in Supabase Authentication → Users.
-6. Sign in and verify the PaySplit dashboard loads.
-
-**Do not disable email confirmation to bypass delivery problems.** For a fintech-oriented app, verified addresses, throttling and proper SMTP configuration are important.
-
-### Reference
-
-- Supabase email templates: https://supabase.com/docs/guides/auth/auth-email-templates
-- Supabase SMTP setup: https://supabase.com/docs/guides/auth/auth-smtp
-- Supabase redirect URLs: https://supabase.com/docs/guides/auth/redirect-urls
-- Supabase Auth rate limits: https://supabase.com/docs/guides/auth/rate-limits
+- [Email templates and `{{ .Token }}`](https://supabase.com/docs/guides/auth/auth-email-templates)
+- [Sign-in verification via OTP](https://supabase.com/docs/guides/auth/auth-email-passwordless)
+- [Resend confirmation](https://supabase.com/docs/reference/javascript/auth-resend)
+- [Custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp)
