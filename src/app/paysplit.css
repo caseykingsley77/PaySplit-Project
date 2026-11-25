@@ -383,15 +383,14 @@
 @media(max-width:540px){.lp-brand .paysplit-brand{font-size:14px;}}
 
 
-/* Email confirmation: link-first, with optional six-digit code input. */
-.ps-verify-options{display:flex;flex-direction:column;gap:12px;text-align:center}
-.ps-verify-primary{background:#f3f9fe;border:1px solid #d4eafa;border-radius:9px;color:#365b70;font-size:12px;line-height:1.65;padding:13px 15px}
-.ps-verify-primary strong{font-weight:700;color:#124d75}
-.ps-verify-toggle{border:0;background:none;color:#168de0;font-size:12px;text-decoration:underline;cursor:pointer;padding:6px 8px}
-.ps-verify-code-note{text-align:center;font-size:11px;color:#6f8294}
-.ps-verify-options .ps-otp-row{margin:0 0 8px}
-.ps-resend{line-height:1.6;margin:8px 0;text-align:center}
-.ps-resend button:disabled{opacity:.5;cursor:not-allowed}
+/* Six-digit email verification: always show OTP boxes, no confirmation-link flow. */
+.ps-auth-form>.ps-otp-row{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0 2px;}
+.ps-auth-form>.ps-otp-row input{width:47px;min-width:0;height:49px;flex:1 1 0;max-width:52px;border:1px solid #d8e2ec;border-radius:9px;padding:0;text-align:center;color:#123b53;font-size:19px;font-weight:500;outline:none;transition:border-color .15s ease,box-shadow .15s ease;}
+.ps-auth-form>.ps-otp-row input:focus{border-color:#2fa8f3;box-shadow:0 0 0 2px rgba(47,168,243,.12);}
+.ps-auth-form>.ps-resend{margin:0 0 4px;text-align:center;font-size:11px;line-height:1.7;color:#748396;}
+.ps-auth-form>.ps-resend button{border:0;background:none;color:#248fe3;text-decoration:underline;font-size:11px;cursor:pointer;padding:0}
+.ps-auth-form>.ps-resend button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:420px){.ps-auth-form>.ps-otp-row{gap:5px}.ps-auth-form>.ps-otp-row input{height:44px;font-size:17px}}
 
 
 /* Camera-based KYC liveness step; aligned with the PaySplit design reference. */
