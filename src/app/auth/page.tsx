@@ -12,12 +12,12 @@ export default function AuthPage(){
  const router=useRouter();
  const [mode,setMode]=useState<Mode>('signin'),[email,setEmail]=useState(''),[password,setPassword]=useState('');
  const [first,setFirst]=useState(''),[last,setLast]=useState(''),[showPassword,setShowPassword]=useState(false);
- const [otp,setOtp]=useState(['','','','','','']),[showCode,setShowCode]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[info,setInfo]=useState('');
+ const [otp,setOtp]=useState(['','','','','','']),[busy,setBusy]=useState(false),[error,setError]=useState(''),[info,setInfo]=useState('');
  const codeRefs=useRef<Array<HTMLInputElement|null>>([]);
  useEffect(()=>{const u=new URLSearchParams(window.location.search),requested=u.get('mode');if(requested==='signup')setMode('signup');else if(requested==='reset')setMode('reset');else setMode('signin');
-  if(configured){supabaseBrowser().auth.getSession().then(({data})=>{if(data.session&&u.get('confirmed')==='1'){setFirst(data.session.user.user_metadata?.first_name||'');setMode('welcome');}else if(data.session)router.replace('/dashboard');}).catch(()=>{});}
+  if(configured){supabaseBrowser().auth.getSession().then(({data})=>{if(data.session)router.replace('/dashboard');}).catch(()=>{});}
  },[router]);
- function changeMode(next:Mode){setMode(next);setError('');setInfo('');setShowCode(false);setOtp(['','','','','','']);}
+ function changeMode(next:Mode){setMode(next);setError('');setInfo('');setOtp(['','','','','','']);}
  async function submit(event:React.FormEvent){event.preventDefault();if(!configured)return;
  setBusy(true);setError('');setInfo('');
  try{
@@ -28,15 +28,16 @@ export default function AuthPage(){
   }
   if(mode==='signup'){
    if(!first.trim()||!last.trim())throw new Error('Enter your first and last name');
-   const {data,error:e}=await client.auth.signUp({email,password,options:{data:{first_name:first.trim(),last_name:last.trim(),full_name:first.trim()+' '+last.trim()},emailRedirectTo:window.location.origin+'/auth?confirmed=1'}});
+   const {data,error:e}=await client.auth.signUp({email,password,options:{data:{first_name:first.trim(),last_name:last.trim(),full_name:first.trim()+' '+last.trim()}}});
    if(e)throw e;
-   if(data.session){setMode('welcome');return;}
-   setMode('verify');setShowCode(false);setInfo('Open the confirmation link in your inbox to activate your account. If you do not see the email, check your spam or promotions folder.');
+   if(data.session){await client.auth.signOut();throw new Error('Email confirmation is disabled in Supabase. Enable it so signups require a six-digit verification code.');}
+   setOtp(['','','','','','']);setMode('verify');setInfo('Enter the six-digit code from your verification email. Check spam if you cannot find it.');
   }
   if(mode==='verify'){
    if(otp.join('').length!==6)throw new Error('Enter the six-digit email verification code');
-   const {error:e}=await client.auth.verifyOtp({email,token:otp.join(''),type:'email'});if(e)throw e;
-   setMode('welcome');
+   const {data:verified,error:e}=await client.auth.verifyOtp({email,token:otp.join(''),type:'email'});if(e)throw e;
+   if(!verified.session)throw new Error('Code accepted, but no login session was created. Please sign in again.');
+   setOtp(['','','','','','']);setMode('welcome');
   }
   if(mode==='reset'){
    const {error:e}=await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/auth?mode=signin'});if(e)throw e;
@@ -44,9 +45,9 @@ export default function AuthPage(){
   }
  }catch(e){setError(e instanceof Error?e.message:'Unable to complete this request');}finally{setBusy(false);}
  }
- async function resend(){setBusy(true);setError('');setInfo('');try{const {error:e}=await supabaseBrowser().auth.resend({type:'signup',email,options:{emailRedirectTo:window.location.origin+'/auth?confirmed=1'}});if(e)throw e;setInfo('Confirmation email requested. Check your inbox and spam folder; delivery can take a few minutes.');}catch(e){setError(e instanceof Error?e.message:'Could not request another confirmation email. Please try again later.');}finally{setBusy(false);}}
- function codeChange(index:number,value:string){const digits=value.replace(/\D/g,'');if(digits.length>1){const next=Array.from({length:6},(_,i)=>digits[i]||'');setOtp(next);codeRefs.current[Math.min(5,digits.length)]?.focus();return;}
- const next=[...otp];next[index]=digits.slice(-1);setOtp(next);if(digits&&index<5)codeRefs.current[index+1]?.focus();}
+ async function resend(){setBusy(true);setError('');setInfo('');try{const {error:e}=await supabaseBrowser().auth.resend({type:'signup',email});if(e)throw e;setOtp(['','','','','','']);setInfo('A new six-digit code has been requested. Check your inbox or spam folder.');}catch(e){setError(e instanceof Error?e.message:'Could not request another code. Please try again later.');}finally{setBusy(false);}}
+ function codeChange(index:number,value:string){const digit=value.replace(/\D/g,'').slice(-1);setOtp(current=>{const next=[...current];next[index]=digit;return next;});if(digit&&index<5)codeRefs.current[index+1]?.focus();}
+ function pasteCode(index:number,event:React.ClipboardEvent<HTMLInputElement>){const digits=event.clipboardData.getData('text').replace(/\D/g,'').slice(0,6-index);if(!digits)return;event.preventDefault();setOtp(current=>{const next=[...current];for(let n=0;n<digits.length;n++)next[index+n]=digits[n];return next;});codeRefs.current[Math.min(5,index+digits.length)]?.focus();}
  return <div className="ps-auth-wrap">
   <div className="ps-auth-background" aria-hidden="true"><MarketingLanding/></div>
   <Link href="/" className="ps-auth-close-page" aria-label="Return to PaySplit homepage"><X size={18}/></Link>
@@ -62,7 +63,7 @@ export default function AuthPage(){
     <Link className="ps-auth-x" href="/" aria-label="Close"><X size={20}/></Link>
     <div className="ps-auth-logo-holder"><BrandMark size={44} tone="black"/></div>
     <h1>{mode==='signin'?'Welcome back!':mode==='signup'?'Create an account':mode==='verify'?'Please check your email':'Reset your password'}</h1>
-    <p className="ps-auth-subtitle">{mode==='signin'?'Please enter your details, to log in to your account':mode==='signup'?'Get started with smarter salary management':mode==='verify'?'Check the inbox for '+email:'Enter your email to receive a password reset link'}</p>
+    <p className="ps-auth-subtitle">{mode==='signin'?'Please enter your details, to log in to your account':mode==='signup'?'Get started with smarter salary management':mode==='verify'?'We’ve sent a verification code to '+email:'Enter your email to receive a password reset link'}</p>
     {!configured&&<div className="ps-auth-warning"><ShieldCheck size={17}/> Account services are temporarily unavailable. Authentication configuration is pending.</div>}
     {info&&<div className="ps-auth-info" role="status"><Mail size={16}/>{info}</div>}
     {error&&<div className="ps-auth-error" role="alert">{error}</div>}
@@ -70,10 +71,10 @@ export default function AuthPage(){
      {mode==='signup'&&<div className="ps-auth-name-row"><label>First Name<input value={first} onChange={e=>setFirst(e.target.value)} required minLength={1} placeholder="Enter first name" autoComplete="given-name"/></label><label>Last Name<input value={last} onChange={e=>setLast(e.target.value)} required minLength={1} placeholder="Enter last name" autoComplete="family-name"/></label></div>}
      {mode!=='verify'&&<label>Email address<input type="email" required autoComplete="email" placeholder="Enter your email" value={email} onChange={e=>setEmail(e.target.value)}/></label>}
      {(mode==='signin'||mode==='signup')&&<label>Password<div className="ps-password-field"><input type={showPassword?'text':'password'} minLength={8} required autoComplete={mode==='signup'?'new-password':'current-password'} placeholder="At least 8 characters" value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(!showPassword)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>}
-     {mode==='verify'&&<div className="ps-verify-options"><p className="ps-verify-primary">Check your email and click <strong>Confirm your email</strong>. You will return to PaySplit automatically.</p><button type="button" className="ps-verify-toggle" onClick={()=>{setShowCode(!showCode);setError('');}}>{showCode?'Use confirmation link instead':'My email contains a six-digit code'}</button>{showCode&&<><p className="ps-verify-code-note">If your email includes a six-digit verification code, enter it here:</p><div className="ps-otp-row">{otp.map((digit,i)=><input key={i} aria-label={'Verification digit '+(i+1)} ref={e=>{codeRefs.current[i]=e;}} value={digit} onChange={e=>codeChange(i,e.target.value)} onKeyDown={e=>{if(e.key==='Backspace'&&!digit&&i>0)codeRefs.current[i-1]?.focus();}} inputMode="numeric" autoComplete={i===0?'one-time-code':'off'} maxLength={1}/>)}</div></>}</div>}
+     {mode==='verify'&&<div className="ps-otp-row" role="group" aria-label="Six-digit email verification code">{otp.map((digit,i)=><input key={i} aria-label={'Verification digit '+(i+1)} ref={e=>{codeRefs.current[i]=e;}} value={digit} onChange={e=>codeChange(i,e.target.value)} onPaste={e=>pasteCode(i,e)} onFocus={e=>e.currentTarget.select()} onKeyDown={e=>{if(e.key==='Backspace'&&!digit&&i>0)codeRefs.current[i-1]?.focus();else if(e.key==='ArrowLeft'&&i>0)codeRefs.current[i-1]?.focus();else if(e.key==='ArrowRight'&&i<5)codeRefs.current[i+1]?.focus();}} inputMode="numeric" pattern="[0-9]*" autoComplete={i===0?'one-time-code':'off'} maxLength={1}/>)}</div>}
      {mode==='signin'&&<div className="ps-auth-helper"><span><LockKeyhole size={14}/> Secure sign in</span><button type="button" onClick={()=>changeMode('reset')}>Forgot password?</button></div>}
-     {mode==='verify'&&<p className="ps-resend">No email yet? Check spam or promotions. <button type="button" disabled={!configured||busy} onClick={()=>void resend()}>Resend confirmation email</button></p>}
-     {(mode!=='verify'||showCode)&&<button disabled={!configured||busy||(mode==='verify'&&otp.join('').length!==6)} type="submit" className="ps-auth-submit">{busy?'Please wait…':mode==='signin'?'Confirm':mode==='signup'?'Create account':mode==='verify'?'Verify code':'Send reset link'}</button>}
+     {mode==='verify'&&<p className="ps-resend">Didn&apos;t get a code? <button type="button" disabled={!configured||busy} onClick={()=>void resend()}>Click to resend.</button></p>}
+     <button disabled={!configured||busy||(mode==='verify'&&otp.join('').length!==6)} type="submit" className="ps-auth-submit">{busy?'Please wait…':mode==='signin'?'Confirm':mode==='signup'?'Create account':mode==='verify'?'Verify email':'Send reset link'}</button>
     </form>
     <div className="ps-auth-bottom">
      {mode==='signin'?"Don’t have an account? ":mode==='signup'?'Already have an account? ':mode==='verify'?'Wrong email address? ':'Remembered your password? '}
